@@ -24,36 +24,42 @@ public class ReadMenuKey{
      System.out.println("Opened database successfully");
      try{
        //create a statement object
-       //Statement stmt = conn.createStatement();
+       Statement stmt = conn.createStatement();
 
        //Running a query
        //TODO: update the sql command here
-      Scanner sc = new Scanner(new File("MenuKey.csv"));  
-      sc.useDelimiter(",");
+      Scanner sc = new Scanner(new File("MenuKey.csv")).useDelimiter(",");
       int count = 0;
       int Item;
       String Name;
       String Description;
-      float Price;
+      Float Price;
+	  String line;
+	  sc.nextLine();
+	  sc.nextLine();
       while (sc.hasNext()){
-          if (count < 5){
-            String tempData = sc.next(); //Unneeded values from the beginning. These were column names4
-            count++;
-            continue;
-          }
-          else{
-              Item = Integer.parseInt(sc.next());
-              Name = sc.next();
-              Description = sc.next();
-              Price = Float.parseFloat(sc.next());
-          }
-          Statement stmt = conn.createStatement();
-          String sqlStatement = "INSERT INTO menu_key VALUES (" +Item +",'" + Name + "' ,'" + Description + "',2.5);";
-          int result = stmt.executeUpdate(sqlStatement);
-          System.out.println(result);
+			line = sc.nextLine();
+			String[] split1 = line.split("\"",3);
+			if(split1.length > 1){
+				Description = split1[1]; //Description
+				String[] split2 = split1[0].split(",",3);
+				Item = Integer.parseInt(split2[1]);//Primary Key
+				Name = split2[2].substring(0,split2[2].length()-1).replaceFirst("'","");//Name
+				Price = Float.parseFloat(split1[2].substring(2,6));//Price
+			} else{
+				String[] split2 = split1[0].split(",",4);
+				Description = "";
+				Item = Integer.parseInt(split2[1]);//Primary Key
+				Name = split2[2].replaceFirst("'","");//Name
+				Price = Float.parseFloat(split2[3].substring(2,6));//Price
+			}
+            System.out.println(Item + " , " + Name + " , " + Description + " , " + Price);
+			String sqlStatement = "INSERT INTO menu_key VALUES ( " + Item + " , \'" + Name + "\' , \'" + Description + "\' , " + Price +") ON CONFLICT DO NOTHING;";
+			int result = stmt.executeUpdate(sqlStatement);
+			System.out.println(result);
       }   
       sc.close();  //closes the scanner  
-       //String sqlStatement = "INSERT INTO menu_key VALUES ();";
+       
 
        //send statement to DBMS
        //This executeQuery command is useful for data retrieval
