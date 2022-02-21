@@ -3,6 +3,8 @@ import java.util.Scanner;
 import java.sql.*;
 import java.util.Calendar;
 public class ReadOrderSales1{  
+    //This function, given an integer from 1 to 7, will select the date that the order took place on. As we are only reading one week of sales with this file,
+    //the days are hard-coded into it
     public static String PickDay(int num){
         String date = "";
         switch(num){
@@ -47,38 +49,26 @@ public class ReadOrderSales1{
        //create a statement object
        Statement stmt = conn.createStatement();
 
-       //Running a query
-       //TODO: update the sql command here
       Scanner sc = new Scanner(new File("FirstWeekSales.csv")).useDelimiter(",");
-      int Item1;
-      int Item2;
-      int Item3;
-      int Item4;
-      int Item5;
-      int Item6;
-      int Item7;
-      int Item8;
-      int Item9;
-      int Item10;
-      int Item11;
-      int Item12;
-      int Item13;
-      int Item14;
-      int Item15;
-      int Item16;
-      int Item17;
-      int Item18;
-      int Item19;
+      //Instantiate each of the 19 menu items and their crresponding quantities to read from the file
+      int Item1, Item2, Item3, Item4, Item5, Item6, Item7, Item8, Item9, Item10, Item11, Item12, Item13, Item14, Item15, Item16, Item17, Item18, Item19;
       int quan1, quan2, quan3, quan4, quan5, quan6, quan7, quan8, quan9, quan10, quan11, quan12, quan13, quan14, quan15, quan16, quan17, quan18, quan19;
+      //Set current date as a string for now, may change it to the Date sql data type if need be
       String currDate;
+      //day of the week that the sales took place in (i.e. Monday, Tuesday)
       String dayOfWeek;
+      //Total ammount of money in sales that happened in one day
       double Price = 0;
 	  sc.nextLine();
       int dayCount = 1;
       while (sc.hasNext()){
+          //use PickDay function to get the date
             currDate = ReadOrderSales1.PickDay(dayCount);
+            //read in day of the week, then go to next line
 			dayOfWeek = sc.next();
             sc.nextLine();
+            //The pattern goes like this for each day: read the Item number and its corresponding quantity, then go to next line.
+            //Repeat untill all 19 menu items are correctly read
             Item1 = sc.nextInt();
             quan1 = sc.nextInt();
             sc.nextLine();
@@ -136,18 +126,34 @@ public class ReadOrderSales1{
             Item19 = sc.nextInt();
             quan19 = sc.nextInt();
             sc.nextLine();
+            //If its the last set of data (i.e. Saturday), go into if statement as the nextLine statement will cause an error
             if (!sc.hasNext()){
-                Price = (quan1*6.5)+(quan2*5.5)+(quan3*4.5)+(quan4*2.5)+(quan5*5)+(quan6*32)+(quan7*0.75)+(quan8*4.75)+(quan9*5.75)+(quan10*3.75)+(quan11*4.5)+(quan12*3.5)+(quan13*0.1)+(quan14*1.5)+(quan15*0.5)+(quan16*1.5)+(quan17*1.75)+(quan18*1.25)+(quan19*2);
-                System.out.println(currDate + " , " + dayOfWeek + " , " + Price + ", " + Item1 + ", " + quan1+ " , " + Item2 + ", " + quan2+ " , " + Item3 + ", " + quan3+ " , " + Item4 + ", " + quan4+ " , " + Item5 + ", " + quan5+ " , " + Item6 + ", " + quan6+ " , " + Item7 + ", " + quan7+ " , " + Item8 + ", " + quan8+ " , " + Item9 + ", " + quan9+ " , " + Item10 + ", " + quan10+ " , " + Item11 + ", " + quan11+ " , " + Item12 + ", " + quan12+ " , " + Item13 + ", " + quan13+ " , " + Item14 + ", " + quan14+ " , " + Item15 + ", " + quan15+ " , " + Item16 + ", " + quan16+ " , " + Item17 + ", " + quan17+ " , " + Item18 + ", " + quan18+ " , " + Item19 + ", " + quan19);
+                //Calculating the price based on menu_key prices
+                Price = (quan1*6.5)+(quan2*5.5)+(quan3*4.5)+(quan4*2.5)+(quan5*5)+(quan6*32)+(quan7*0.75)+(quan8*4.75)+(quan9*5.75)+(quan10*3.75)+(quan11*4.5)+
+                (quan12*3.5)+(quan13*0.1)+(quan14*1.5)+(quan15*0.5)+(quan16*1.5)+(quan17*1.75)+(quan18*1.25)+(quan19*2);
+                System.out.println(currDate + " , " + dayOfWeek + " , " + Price + ", " + Item1 + ", " + quan1+ " , " + Item2 + ", " + quan2+ " , " + Item3 + ", " + 
+                quan3+ " , " + Item4 + ", " + quan4+ " , " + Item5 + ", " + quan5+ " , " + Item6 + ", " + quan6+ " , " + Item7 + ", " + quan7+ " , " + Item8 + ", " + 
+                quan8+ " , " + Item9 + ", " + quan9+ " , " + Item10 + ", " + quan10+ " , " + Item11 + ", " + quan11+ " , " + Item12 + ", " + quan12+ " , " + Item13 + 
+                ", " + quan13+ " , " + Item14 + ", " + quan14+ " , " + Item15 + ", " + quan15+ " , " + Item16 + ", " + quan16+ " , " + Item17 + ", " + quan17+ " , " + 
+                Item18 + ", " + quan18+ " , " + Item19 + ", " + quan19);
+                //increment daycount to increase the day
                 dayCount++;
+                //sql statements that insert the values into the table
                 String sqlStatement = "INSERT INTO sales_list VALUES ( \'" + currDate + "\' , \'" + dayOfWeek + "\' , " + (float)Price + " , " + quan1+ " , " + quan2+ " , " + quan3+ " , " + quan4+ " , " + quan5+ " , " + quan6+ " , " + quan7+ " , " + quan8+ " , " + quan9+ " , " + quan10+ " , " + quan11+ " , " + quan12+ " , " + quan13+ " , " + quan14+ " , " + quan15+ " , " + quan16+ " , " + quan17+ " , " + quan18+ " , " + quan19 +") ON CONFLICT DO NOTHING;";
                 int result = stmt.executeUpdate(sqlStatement);
                 System.out.println(result);
                 break;
             }
+            //This next line skips the empty line in the csv file between different days and the next iteration of the loop will then read the next day
             sc.nextLine();
-            Price = (quan1*6.5)+(quan2*5.5)+(quan3*4.5)+(quan4*2.5)+(quan5*5)+(quan6*32)+(quan7*0.75)+(quan8*4.75)+(quan9*5.75)+(quan10*3.75)+(quan11*4.5)+(quan12*3.5)+(quan13*0.1)+(quan14*1.5)+(quan15*0.5)+(quan16*1.5)+(quan17*1.75)+(quan18*1.25)+(quan19*2);
-            System.out.println(currDate + " , " + dayOfWeek + " , " + Price + ", " + Item1 + ", " + quan1+ " , " + Item2 + ", " + quan2+ " , " + Item3 + ", " + quan3+ " , " + Item4 + ", " + quan4+ " , " + Item5 + ", " + quan5+ " , " + Item6 + ", " + quan6+ " , " + Item7 + ", " + quan7+ " , " + Item8 + ", " + quan8+ " , " + Item9 + ", " + quan9+ " , " + Item10 + ", " + quan10+ " , " + Item11 + ", " + quan11+ " , " + Item12 + ", " + quan12+ " , " + Item13 + ", " + quan13+ " , " + Item14 + ", " + quan14+ " , " + Item15 + ", " + quan15+ " , " + Item16 + ", " + quan16+ " , " + Item17 + ", " + quan17+ " , " + Item18 + ", " + quan18+ " , " + Item19 + ", " + quan19);
+            //These next lines are just copy paste of the sql statements and price calculation above
+            Price = (quan1*6.5)+(quan2*5.5)+(quan3*4.5)+(quan4*2.5)+(quan5*5)+(quan6*32)+(quan7*0.75)+(quan8*4.75)+(quan9*5.75)+(quan10*3.75)+(quan11*4.5)+
+            (quan12*3.5)+(quan13*0.1)+(quan14*1.5)+(quan15*0.5)+(quan16*1.5)+(quan17*1.75)+(quan18*1.25)+(quan19*2);
+            System.out.println(currDate + " , " + dayOfWeek + " , " + Price + ", " + Item1 + ", " + quan1+ " , " + Item2 + ", " + quan2+ " , " + Item3 + ", " + quan3+ 
+            " , " + Item4 + ", " + quan4+ " , " + Item5 + ", " + quan5+ " , " + Item6 + ", " + quan6+ " , " + Item7 + ", " + quan7+ " , " + Item8 + ", " + quan8+ " , " 
+            + Item9 + ", " + quan9+ " , " + Item10 + ", " + quan10+ " , " + Item11 + ", " + quan11+ " , " + Item12 + ", " + quan12+ " , " + Item13 + ", " + quan13+ " , "
+             + Item14 + ", " + quan14+ " , " + Item15 + ", " + quan15+ " , " + Item16 + ", " + quan16+ " , " + Item17 + ", " + quan17+ " , " + Item18 + ", " + quan18+ 
+             " , " + Item19 + ", " + quan19);
             dayCount++;
 			String sqlStatement = "INSERT INTO sales_list VALUES ( \'" + currDate + "\' , \'" + dayOfWeek + "\' , " + (float)Price + " , " + quan1+ " , " + quan2+ " , " + quan3+ " , " + quan4+ " , " + quan5+ " , " + quan6+ " , " + quan7+ " , " + quan8+ " , " + quan9+ " , " + quan10+ " , " + quan11+ " , " + quan12+ " , " + quan13+ " , " + quan14+ " , " + quan15+ " , " + quan16+ " , " + quan17+ " , " + quan18+ " , " + quan19 +") ON CONFLICT DO NOTHING;";
 			int result = stmt.executeUpdate(sqlStatement);
@@ -155,22 +161,7 @@ public class ReadOrderSales1{
       }   
       sc.close();  //closes the scanner  
        
-
-       //send statement to DBMS
-       //This executeQuery command is useful for data retrieval
-       //ResultSet result = stmt.executeQuery(sqlStatement);
-       //OR
-       //This executeUpdate command is useful for updating data
-       //int result = stmt.executeUpdate(sqlStatement);
-
-       //OUTPUT
-       //You will need to output the results differently depeninding on which function you use
        System.out.println("--------------------Query Results--------------------");
-       //while (result.next()) {
-       //System.out.println(result.getString("column_name"));
-       //}
-       //OR
-      //System.out.println(result);
    } catch (Exception e){
        e.printStackTrace();
        System.err.println(e.getClass().getName()+": "+e.getMessage());
