@@ -2,25 +2,26 @@ import java.io.*;
 import java.util.Scanner;
 import java.sql.*;
 import java.util.Calendar;
-public class ReadOrderSales1{  
+//Note that this code is for our second week of sales
+public class ReadOrderSales2{  
     //This function, given an integer from 1 to 7, will select the date that the order took place on. As we are only reading one week of sales with this file,
     //the days are hard-coded into it
     private static String PickDay(int num){
         String date = "";
         switch(num){
-            case 1: date = "02/13/2022";
+            case 1: date = "02/20/2022";
             break;
-            case 2: date = "02/14/2022";
+            case 2: date = "02/21/2022";
             break;
-            case 3: date = "02/15/2022";
+            case 3: date = "02/22/2022";
             break;
-            case 4: date = "02/16/2022";
+            case 4: date = "02/23/2022";
             break;
-            case 5: date = "02/17/2022";
+            case 5: date = "02/24/2022";
             break;
-            case 6: date = "02/18/2022";
+            case 6: date = "02/25/2022";
             break;
-            case 7: date = "02/19/2022";
+            case 7: date = "02/26/2022";
             break;
         }
         return date;
@@ -49,7 +50,7 @@ public class ReadOrderSales1{
        //create a statement object
        Statement stmt = conn.createStatement();
 
-      Scanner sc = new Scanner(new File("FirstWeekSales.csv")).useDelimiter(",");
+      Scanner sc = new Scanner(new File("SecondWeekSales.csv")).useDelimiter(",");
       //Instantiate each of the 19 menu items and their crresponding quantities to read from the file
       int Item1, Item2, Item3, Item4, Item5, Item6, Item7, Item8, Item9, Item10, Item11, Item12, Item13, Item14, Item15, Item16, Item17, Item18, Item19;
       int quan1, quan2, quan3, quan4, quan5, quan6, quan7, quan8, quan9, quan10, quan11, quan12, quan13, quan14, quan15, quan16, quan17, quan18, quan19;
@@ -63,7 +64,7 @@ public class ReadOrderSales1{
       int dayCount = 1;
       while (sc.hasNext()){
           //use PickDay function to get the date
-            currDate = ReadOrderSales1.PickDay(dayCount);
+            currDate = ReadOrderSales2.PickDay(dayCount);
             //read in day of the week, then go to next line
 			dayOfWeek = sc.next();
             sc.nextLine();
