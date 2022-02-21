@@ -43,7 +43,7 @@ public class jdbcpostgreSQL {
 
        //Running a query
        //TODO: update the sql command here
-       String sqlStatement = "INSERT INTO FoodItems VALUES ('Chris Pratt',903,'Jurassic World','01/01/2022');";
+       String sqlStatement = "INSERT INTO teammembers VALUES ('Chris Pratt',903,'Jurassic World','01/01/2022');";
 
        //send statement to DBMS
        //This executeQuery command is useful for data retrieval
