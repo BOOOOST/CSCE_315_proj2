@@ -32,6 +32,9 @@ public class GUI_Employee extends JFrame implements ActionListener {
       JOptionPane.showMessageDialog(null,"Opened database successfully");
 
       Vector<String> menu = new Vector<String>();
+      Vector<Integer> numList = new Vector<Integer>();
+      Vector<Float> MenupriceList = new Vector<Float>();
+      Vector<Float> priceList = new Vector<Float>();
       try{
         //create a statement object
         Statement stmt = conn.createStatement();
@@ -42,6 +45,15 @@ public class GUI_Employee extends JFrame implements ActionListener {
         ResultSet result = stmt.executeQuery(sqlStatement);
         while (result.next()) {
           menu.add(result.getString("name"));
+          numList.add(Integer.parseInt(result.getString("item")));
+          MenupriceList.add(Float.parseFloat(result.getString("price")));
+        }
+
+        sqlStatement = "SELECT * FROM sales_list;";
+        //send statement to DBMS
+        result = stmt.executeQuery(sqlStatement);
+        while (result.next()) {
+          priceList.add(Float.parseFloat(result.getString("total_sales")));
         }
         
       } catch (Exception e){
@@ -61,114 +73,63 @@ public class GUI_Employee extends JFrame implements ActionListener {
 
       JButton b1 = new JButton("Add Order");
 
-      JTextField item_number = new JTextField("Item: ");
-      JTextField item_price = new JTextField("Price: ");
+      JLabel item_number = new JLabel("Item: ");
+      JLabel item_price = new JLabel("Price: ");
+      JLabel dateLabel = new JLabel("Date: ");
+
+      JTextField currentDate = new JTextField("(mm/dd/yyyy)");
       
       JComboBox t = new JComboBox(menu);
       t.setEditable(false);
 
-      // add actionlistener to button
+      // add actionlistener to "Close" button
       b.addActionListener(s);
-      b1.addActionListener(s);
+      // add actionlistener to "Add Order" button
+      b1.addActionListener(new ActionListener(){
+        public void actionPerformed(ActionEvent e){
+          Connection conn = null;
+          try {
+            Class.forName("org.postgresql.Driver");
+            conn = DriverManager.getConnection("jdbc:postgresql://csce-315-db.engr.tamu.edu/csce315903_16db",
+               "csce315903_16user", "prjj1234");
+          } catch (Exception t) {
+            t.printStackTrace();
+            System.err.println(e.getClass().getName()+": "+t.getMessage());
+            System.exit(0);
+          }
+          
+        }}); 
+
+      //add actionlistener for drop down menu change
       t.addActionListener(new ActionListener(){
         public void actionPerformed(ActionEvent e)
         {// a change in the drop down menu
             JComboBox cb = (JComboBox)e.getSource();
             String menu_item = (String)cb.getSelectedItem();
-            switch (menu_item){
-              case "5 finger original":
-                  item_number.setText("501");
-                  item_price.setText("$6.50");
-                  break;
-              case "4 finger meal":
-                  item_number.setText("502");
-                  item_price.setText("$5.50");
-                  break;
-              case "three finger meal":
-                  item_number.setText("503");
-                  item_price.setText("$4.50");
-                  break;
-              case "kids meal":
-                  item_number.setText("504");
-                  item_price.setText("$2.50");
-                  break;
-              case "gallon of tea":
-                  item_number.setText("505");
-                  item_price.setText("$5.00");
-                  break;
-              case "family pack":
-                  item_number.setText("506");
-                  item_price.setText("$32.00");
-                  break;
-              case "Club Sandwich meal":
-                  item_number.setText("507");
-                  item_price.setText("$7.50");
-                  break;
-              case "Club Sandwich only":
-                  item_number.setText("508");
-                  item_price.setText("$4.75");
-                  break;
-              case "Sandwich meal combo":
-                  item_number.setText("509");
-                  item_price.setText("$5.75");
-                  break;
-              case "sandwich only":
-                  item_number.setText("510");
-                  item_price.setText("$3.75");
-                  break;
-              case "Grill cheese meal combo":
-                  item_number.setText("511");
-                  item_price.setText("$4.50");
-                  break;
-              case "grill cheese sandwich only":
-                  item_number.setText("512");
-                  item_price.setText("$3.50");
-                  break;
-              case "Laynes sauce":
-                  item_number.setText("513");
-                  item_price.setText("$0.10");
-                  break;
-              case "Chicken finger":
-                  item_number.setText("514");
-                  item_price.setText("$1.50");
-                  break;
-              case "texas toast":
-                  item_number.setText("515");
-                  item_price.setText("$0.50");
-                  break;
-              case "potato Salad":
-                  item_number.setText("516");
-                  item_price.setText("$1.50");
-                  break;
-              case "Crinkle cut fries":
-                  item_number.setText("517");
-                  item_price.setText("$1.75");
-                  break;
-              case "Fountain Drink":
-                  item_number.setText("518");
-                  item_price.setText("$1.25");
-                  break;
-              case "Bottle drink":
-                  item_number.setText("519");
-                  item_price.setText("$2.00");
-                  break;
-              default:
-                  item_number.setText("ERROR");
-                  item_price.setText("$ERROR");
-              }
+            //set the item number and the item price to its corresponding menu item
+            int num;
+            float price;
+            for (int i = 0; i < menu.size(); i++){
+                if (menu.get(i) == menu_item){
+                  num = numList.get(i);
+                  price = MenupriceList.get(i);
+                  item_number.setText("Item: " + String.valueOf(num));
+                  item_price.setText("Price: $" + String.valueOf(price));
+                }
+            }
           }
       });
 
-      //TODO Step 4
+      //add all menu components to panel
       p.add(b1, BorderLayout.WEST);
+      p.add(dateLabel, BorderLayout.WEST);
+      p.add(currentDate, BorderLayout.WEST);
       p.add(item_number, BorderLayout.WEST);
       p.add(t, BorderLayout.CENTER);
       p.add(item_price, BorderLayout.EAST);
 
-      // add button to panel
-      //p.add(b, BorderLayout.NORTH);
 
-      // add panel to frame
+      // add close button and panel to frame
       f.add(b, BorderLayout.NORTH);
       f.add(p, BorderLayout.CENTER);
 
@@ -187,18 +148,11 @@ public class GUI_Employee extends JFrame implements ActionListener {
       }
     }
 
-    // if a button is pressed
     public void actionPerformed(ActionEvent e)
     {
         String s = e.getActionCommand();
         if (s.equals("Close")) {
             f.dispose();
         }
-        else if (s.equals("Add Order")) {
-            //add the order to database
-            
-        }
     }
-
-
 }
