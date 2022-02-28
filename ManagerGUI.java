@@ -29,6 +29,8 @@ public class ManagerGUI extends JFrame implements ActionListener {
       ManagerGUI gui = new ManagerGUI();
       f = new JFrame("Manager Menu View");
 
+      JPanel add_item_pan = new JPanel();
+      add_item_pan.setLayout(new GridLayout(2,5));
 
       pan = new JPanel();
       pan.setLayout(new GridLayout(0,4));
@@ -42,11 +44,16 @@ public class ManagerGUI extends JFrame implements ActionListener {
       JTextField add_name = new JTextField();
       JTextField add_desc = new JTextField();
       JTextField add_price = new JTextField();
-      add.addActionListener(new ActionListener(){
-        public void actionPerformed(ActionEvent e){
-
-        }
-      });
+      add_item_pan.add(new JLabel(""));
+      add_item_pan.add(new JLabel("Item", SwingConstants.CENTER));
+      add_item_pan.add(new JLabel("Name", SwingConstants.CENTER));
+      add_item_pan.add(new JLabel("Description", SwingConstants.CENTER));
+      add_item_pan.add(new JLabel("Price", SwingConstants.CENTER));
+      add_item_pan.add(add);
+      add_item_pan.add(add_id);
+      add_item_pan.add(add_name);
+      add_item_pan.add(add_desc);
+      add_item_pan.add(add_price);
 
       //initialize edit item button components
       JButton edit = new JButton("Edit Item");
@@ -61,17 +68,15 @@ public class ManagerGUI extends JFrame implements ActionListener {
 
       //initialize remove item button components
       JButton rem = new JButton("Remove Item");
-      rem.addActionListener(new ActionListener(){
-        public void actionPerformed(ActionEvent e){
-
-        }
-      });
+      JComboBox rem_targ_name = new JComboBox();
+      
       pan.add(edit);
       pan.add(edit_targ_name);
       pan.add(edit_targ_col);
       pan.add(edit_in);
       pan.add(rem);
-      pan.add(add);
+      pan.add(rem_targ_name);
+      //pan.add(new JLabel(""));
       pan.add(new JLabel(""));
       pan.add(new JLabel(""));
       pan.add(new JLabel("Item", SwingConstants.CENTER));
@@ -79,27 +84,20 @@ public class ManagerGUI extends JFrame implements ActionListener {
       pan.add(new JLabel("Description", SwingConstants.CENTER));
       pan.add(new JLabel("Price", SwingConstants.CENTER));
       
-      Vector<String> item_names = new Vector<String>();
       try{
         //create a statement object
         Statement stmt = conn.createStatement();
-        //get all item names
-        String sqlStatement = "SELECT name FROM menu_key;";
-        ResultSet result = stmt.executeQuery(sqlStatement);
-        while(result.next()){
-          item_names.add(result.getString("name"));
-        }
         //get all rows and cols
-        sqlStatement = "SELECT * FROM menu_key;";
-        result = stmt.executeQuery(sqlStatement);
+        String sqlStatement = "SELECT * FROM menu_key;";
+        ResultSet result = stmt.executeQuery(sqlStatement);
         while(result.next()){
           JLabel cell = new JLabel(String.valueOf(result.getInt("item")), SwingConstants.CENTER);
           cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
           pan.add(cell);
 
           String obj = result.getString("name");
-          item_names.add(obj);
           edit_targ_name.addItem(obj);
+          rem_targ_name.addItem(obj);
           cell = new JLabel(obj, SwingConstants.CENTER);
           cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
           pan.add(cell);
@@ -138,8 +136,39 @@ public class ManagerGUI extends JFrame implements ActionListener {
         }
       });
 
+      add.addActionListener(new ActionListener(){
+        public void actionPerformed(ActionEvent e){
+          int item = Integer.parseInt(add_id.getText());
+          String name = add_name.getText();
+          String desc = add_desc.getText();
+          double price = Double.parseDouble(add_price.getText());
+          try{
+            Statement stmt = conn.createStatement();
+            String sqlStatement = String.format("INSERT INTO menu_key VALUES (%d, \'%s\', \'%s\', %.2f) ON CONFLICT DO NOTHING;",item,name,desc,price);
+            stmt.executeUpdate(sqlStatement);
+          } catch(Exception x){
+            JOptionPane.showMessageDialog(null,"Error accessing Database." + x);
+          }
+        }
+      });
+
+      rem.addActionListener(new ActionListener(){
+        public void actionPerformed(ActionEvent e){
+          String sel = (String)rem_targ_name.getSelectedItem();
+          try{
+            Statement stmt = conn.createStatement();
+            String sqlStatement = "DELETE FROM menu_key WHERE name = \'" + sel + "\';";
+            //System.out.println(sqlStatement);
+            stmt.executeUpdate(sqlStatement);
+          } catch (Exception x){
+            JOptionPane.showMessageDialog(null,"Error accessing Database." + x);
+          }       
+        }
+      });
+
       f.setLayout(new BorderLayout(20,15));
-      f.add(b);
+      f.add(b,BorderLayout.EAST);
+      f.add(add_item_pan,BorderLayout.WEST);
       f.add(pan,BorderLayout.CENTER);
       f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
       f.setSize(600,600);
