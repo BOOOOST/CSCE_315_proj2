@@ -47,6 +47,8 @@ public class GUI_Inventory extends JFrame implements ActionListener {
             String sqlStm = "SELECT * FROM inventory;";
             ResultSet r = stm.executeQuery(sqlStm);
 
+            // gets sku, name, type, quantity, sold_by, and description from inventory table
+            // and put them in grid panel
             while (r.next()) {
                 JLabel cell = new JLabel(r.getString("sku"));
                 cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
