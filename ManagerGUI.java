@@ -88,7 +88,7 @@ public class ManagerGUI extends JFrame implements ActionListener {
         //create a statement object
         Statement stmt = conn.createStatement();
         //get all rows and cols
-        String sqlStatement = "SELECT * FROM menu_key;";
+        String sqlStatement = "SELECT * FROM menu_key ORDER BY item asc;";
         ResultSet result = stmt.executeQuery(sqlStatement);
         while(result.next()){
           JLabel cell = new JLabel(String.valueOf(result.getInt("item")), SwingConstants.CENTER);
@@ -115,6 +115,16 @@ public class ManagerGUI extends JFrame implements ActionListener {
         JOptionPane.showMessageDialog(null,"Error accessing Database: " + e);
       }
 
+      f.setLayout(new BorderLayout(20,15));
+      f.add(b,BorderLayout.SOUTH);
+      f.add(add_item_pan,BorderLayout.WEST);
+      f.add(pan,BorderLayout.CENTER);
+      f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+      f.setSize(600,600);
+      f.pack();
+      f.setVisible(true);
+
+      // definition for edit item button that changes the value of a certain attribute of an item given by the selected name
       edit.addActionListener(new ActionListener(){
         public void actionPerformed(ActionEvent e){
           String sel = (String)edit_targ_name.getSelectedItem();
@@ -133,9 +143,17 @@ public class ManagerGUI extends JFrame implements ActionListener {
           } catch(Exception x){
             JOptionPane.showMessageDialog(null,"Error accessing Database." + x);
           }
+          edit_in.setText("");
+          if(type.equals("name")){
+            edit_targ_name.removeItem(sel);
+            edit_targ_name.addItem(in);
+            rem_targ_name.removeItem(sel);
+            rem_targ_name.addItem(in);
+          }
         }
       });
 
+      // definition for add item button that adds a new row to menu_key given all attributes. does nothing on conflict
       add.addActionListener(new ActionListener(){
         public void actionPerformed(ActionEvent e){
           int item = Integer.parseInt(add_id.getText());
@@ -149,9 +167,16 @@ public class ManagerGUI extends JFrame implements ActionListener {
           } catch(Exception x){
             JOptionPane.showMessageDialog(null,"Error accessing Database." + x);
           }
+          add_id.setText("");
+          add_name.setText("");
+          add_desc.setText("");
+          add_price.setText("");
+          edit_targ_name.addItem(name);
+          rem_targ_name.addItem(name);
         }
       });
 
+      // definition for remove item button that deletes a row from menu_key based on an input name
       rem.addActionListener(new ActionListener(){
         public void actionPerformed(ActionEvent e){
           String sel = (String)rem_targ_name.getSelectedItem();
@@ -163,17 +188,10 @@ public class ManagerGUI extends JFrame implements ActionListener {
           } catch (Exception x){
             JOptionPane.showMessageDialog(null,"Error accessing Database." + x);
           }       
+          edit_targ_name.removeItem(sel);
+          rem_targ_name.removeItem(sel);
         }
       });
-
-      f.setLayout(new BorderLayout(20,15));
-      f.add(b,BorderLayout.EAST);
-      f.add(add_item_pan,BorderLayout.WEST);
-      f.add(pan,BorderLayout.CENTER);
-      f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-      f.setSize(600,600);
-      f.pack();
-      f.setVisible(true);
     }
 
     public void actionPerformed(ActionEvent e){
