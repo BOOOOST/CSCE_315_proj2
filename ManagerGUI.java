@@ -10,6 +10,12 @@ public class ManagerGUI extends JFrame implements ActionListener {
     static JFrame f;
     static Connection conn;
     static JPanel pan;
+    static JButton edit;
+    static JComboBox edit_targ_name;
+    static JComboBox edit_targ_col;
+    static JTextField edit_in;
+    static JButton rem;
+    static JComboBox rem_targ_name;
 
     public static void main(String[] args){
       //Building the connection
@@ -26,15 +32,19 @@ public class ManagerGUI extends JFrame implements ActionListener {
       }
       JOptionPane.showMessageDialog(null,"Opened database successfully");
       
+      // initialize manage GUI
       ManagerGUI gui = new ManagerGUI();
       f = new JFrame("Manager Menu View");
 
+      // separate panel for the add item button and its parts
       JPanel add_item_pan = new JPanel();
       add_item_pan.setLayout(new GridLayout(2,5));
 
+      // initialize and set layout of the main panel
       pan = new JPanel();
       pan.setLayout(new GridLayout(0,4));
 
+      // initialize the close button and add give it an action listener
       JButton b = new JButton("Close");
       b.addActionListener(gui);
       
@@ -56,65 +66,28 @@ public class ManagerGUI extends JFrame implements ActionListener {
       add_item_pan.add(add_price);
 
       //initialize edit item button components
-      JButton edit = new JButton("Edit Item");
-      JComboBox edit_targ_name = new JComboBox();
+      edit = new JButton("Edit Item");
+      edit_targ_name = new JComboBox();
       Vector<String> col_names = new Vector<String>();
       col_names.add("item");
       col_names.add("name");
       col_names.add("description");
       col_names.add("price");
-      JComboBox edit_targ_col = new JComboBox(col_names);
-      JTextField edit_in = new JTextField();
+      edit_targ_col = new JComboBox(col_names);
+      edit_in = new JTextField();
 
       //initialize remove item button components
-      JButton rem = new JButton("Remove Item");
-      JComboBox rem_targ_name = new JComboBox();
+      rem = new JButton("Remove Item");
+      rem_targ_name = new JComboBox();
       
-      pan.add(edit);
-      pan.add(edit_targ_name);
-      pan.add(edit_targ_col);
-      pan.add(edit_in);
-      pan.add(rem);
-      pan.add(rem_targ_name);
-      //pan.add(new JLabel(""));
-      pan.add(new JLabel(""));
-      pan.add(new JLabel(""));
-      pan.add(new JLabel("Item", SwingConstants.CENTER));
-      pan.add(new JLabel("Name", SwingConstants.CENTER));
-      pan.add(new JLabel("Description", SwingConstants.CENTER));
-      pan.add(new JLabel("Price", SwingConstants.CENTER));
-      
+      //this calls refresh panel which adds all components and database entries for menu_key into the main panel
       try{
-        //create a statement object
-        Statement stmt = conn.createStatement();
-        //get all rows and cols
-        String sqlStatement = "SELECT * FROM menu_key ORDER BY item asc;";
-        ResultSet result = stmt.executeQuery(sqlStatement);
-        while(result.next()){
-          JLabel cell = new JLabel(String.valueOf(result.getInt("item")), SwingConstants.CENTER);
-          cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-          pan.add(cell);
-
-          String obj = result.getString("name");
-          edit_targ_name.addItem(obj);
-          rem_targ_name.addItem(obj);
-          cell = new JLabel(obj, SwingConstants.CENTER);
-          cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-          pan.add(cell);
-
-          cell = new JLabel(result.getString("description"), SwingConstants.CENTER);
-          cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-          pan.add(cell);
-
-          cell = new JLabel(String.format("$%.2f",result.getDouble("price")), SwingConstants.CENTER);
-          cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
-          pan.add(cell);
-        }
-        
+        refreshPanel();
       } catch (Exception e){
         JOptionPane.showMessageDialog(null,"Error accessing Database: " + e);
       }
 
+      //set frame layout and add all components to frame
       f.setLayout(new BorderLayout(20,15));
       f.add(b,BorderLayout.SOUTH);
       f.add(add_item_pan,BorderLayout.WEST);
@@ -150,6 +123,7 @@ public class ManagerGUI extends JFrame implements ActionListener {
             rem_targ_name.removeItem(sel);
             rem_targ_name.addItem(in);
           }
+          refreshPanel();
         }
       });
 
@@ -173,6 +147,7 @@ public class ManagerGUI extends JFrame implements ActionListener {
           add_price.setText("");
           edit_targ_name.addItem(name);
           rem_targ_name.addItem(name);
+          refreshPanel();
         }
       });
 
@@ -190,10 +165,66 @@ public class ManagerGUI extends JFrame implements ActionListener {
           }       
           edit_targ_name.removeItem(sel);
           rem_targ_name.removeItem(sel);
+          refreshPanel();
         }
       });
     }
 
+    //every time an item is added removed or edited this function gets called which clears the main panel and adds new data and re-adds preexisting components
+    static public void refreshPanel(){
+      edit_targ_name.removeAllItems();
+      rem_targ_name.removeAllItems();
+      pan.removeAll();
+      pan.add(edit);
+      pan.add(edit_targ_name);
+      pan.add(edit_targ_col);
+      pan.add(edit_in);
+      pan.add(rem);
+      pan.add(rem_targ_name);
+      pan.add(new JLabel(""));
+      pan.add(new JLabel(""));
+      pan.add(new JLabel("Item", SwingConstants.CENTER));
+      pan.add(new JLabel("Name", SwingConstants.CENTER));
+      pan.add(new JLabel("Description", SwingConstants.CENTER));
+      pan.add(new JLabel("Price", SwingConstants.CENTER));
+      try{
+        //create a statement object
+        Statement stmt = conn.createStatement();
+        //get all rows and cols
+        String sqlStatement = "SELECT * FROM menu_key ORDER BY item asc;";
+        ResultSet result = stmt.executeQuery(sqlStatement);
+        while(result.next()){
+
+          //this adds the item id number to the panel grid
+          JLabel cell = new JLabel(String.valueOf(result.getInt("item")), SwingConstants.CENTER);
+          cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+          pan.add(cell);
+
+          //this adds the item name to the panel grid
+          String obj = result.getString("name");
+          edit_targ_name.addItem(obj);
+          rem_targ_name.addItem(obj);
+          cell = new JLabel(obj, SwingConstants.CENTER);
+          cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+          pan.add(cell);
+
+          //this adds the item description to the panel grid
+          cell = new JLabel(result.getString("description"), SwingConstants.CENTER);
+          cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+          pan.add(cell);
+
+          //this adds the item price to the panel grid
+          cell = new JLabel(String.format("$%.2f",result.getDouble("price")), SwingConstants.CENTER);
+          cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+          pan.add(cell);
+        }
+      } catch (Exception e){
+        JOptionPane.showMessageDialog(null,"Error accessing Database: " + e);
+      }
+
+    }
+
+    //this is called when button 'b' is pressed and it closes the connection to the database and disposes of the frame
     public void actionPerformed(ActionEvent e){
         String s = e.getActionCommand();
         if (s.equals("Close")) {
