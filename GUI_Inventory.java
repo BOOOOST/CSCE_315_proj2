@@ -79,11 +79,28 @@ public class GUI_Inventory extends JFrame implements ActionListener {
             JOptionPane.showMessageDialog(null, "Error accessing database.");
         }
 
+        JTextField editIn = new JTextField();
         JPanel editPan = new JPanel();
         editPan.setLayout(new GridLayout(1, 3));
         JComboBox itemSell = new JComboBox(itemNames);
         JButton itemB = new JButton("Edit Item Quantity");
-        JTextField editIn = new JTextField();
+        itemB.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String quant = editIn.getText();
+                String sel = (String) itemSell.getSelectedItem();
+                try {
+                    Statement st = conn.createStatement();
+                    String sqlSt = "UPDATE inventory SET quantity = " + quant + " WHERE name = \'" + sel + "\';";
+                    st.executeUpdate(sqlSt);
+
+                    JOptionPane.showMessageDialog(null, "Reload to show changes.");
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(null, "Error accessing database.");
+                }
+                editIn.setText("");
+            }
+        });
+
         editPan.add(itemB);
         editPan.add(itemSell);
         editPan.add(editIn);
@@ -91,6 +108,8 @@ public class GUI_Inventory extends JFrame implements ActionListener {
         f.setLayout(new BorderLayout(20, 15));
         f.add(b, BorderLayout.SOUTH);
         f.add(pan, BorderLayout.CENTER);
+        f.add(editPan, BorderLayout.NORTH);
+
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setSize(600, 600);
         f.pack();
