@@ -4,9 +4,12 @@ import java.awt.event.*;
 import javax.lang.model.util.ElementScanner14;
 import javax.swing.*;
 import java.awt.*;
-import java.util.Vector;
-import java.util.Calendar;
+import java.util.*;
 import java.util.Date;
+import java.time.*;
+import java.time.format.*;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 
 public class GUI_Employee extends JFrame implements ActionListener {
     static JFrame f;
@@ -103,6 +106,10 @@ public class GUI_Employee extends JFrame implements ActionListener {
             String sqlStatement = "SELECT * FROM sales_list;";
             //send statement to DBMS
             ResultSet result = stmt.executeQuery(sqlStatement);
+            //Retrieving the ResultSetMetaData object
+            ResultSetMetaData rsmd = result.getMetaData();
+            //getting the column type
+            int column_count = rsmd.getColumnCount();
             while (result.next()) {
               priceList.add(Float.parseFloat(result.getString("total_sales")));
               quanList.add(Integer.parseInt(result.getString("i_" + numToUpdate)));
@@ -126,9 +133,47 @@ public class GUI_Employee extends JFrame implements ActionListener {
             //TODO 
             if (res == 0){
               Calendar c = Calendar.getInstance();
-              //c.setTime(Date(dateVar));
-              sqlStatement = "INSERT INTO sales_list VALUES(\'" + dateVar + "\', ;";
-              res = stmt.executeUpdate(sqlStatement);
+              DateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+              java.util.Date d = dateFormat.parse(dateVar);
+              c.setTime(d);
+              int dayOfWeek = c.get(Calendar.DAY_OF_WEEK);
+              //Make Switch statement for day of week, maybe use function from readOrder1
+              String dayStr = "";
+              switch(dayOfWeek){
+                  case 1:
+                    dayStr = "Sunday";
+                    break;
+                  case 2:
+                    dayStr = "Monday";
+                    break;
+                  case 3:
+                    dayStr = "Tuesday";
+                    break;
+                  case 4:
+                    dayStr = "Wednesday";
+                    break;
+                  case 5:
+                    dayStr = "Thursday";
+                    break;
+                  case 6:
+                    dayStr = "Friday";
+                    break;
+                  case 7:
+                    dayStr = "Saturday";
+                    break;
+              }
+              String itemCols = "";
+              for (int i = 0; i < column_count-3; i++){
+                  itemCols += "0,";
+              }
+              itemCols += "0)";
+              sqlStatement = "INSERT INTO sales_list VALUES(\'" + dateVar + "\', \'"+ dayStr + "\'," + itemCols + ";";
+              //System.out.println(sqlStatement);
+              stmt.executeUpdate(sqlStatement);
+              sqlStatement = "UPDATE sales_list SET i_" + numToUpdate + " = " + itemQuan + ", total_sales = " + newPrice + " WHERE date = \'" + dateVar + "\';";
+              //send statement to DBMS
+              stmt.executeUpdate(sqlStatement);
+              //System.out.println(res);
             }
             
             
