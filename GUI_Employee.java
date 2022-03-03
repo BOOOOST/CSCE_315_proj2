@@ -5,6 +5,8 @@ import javax.lang.model.util.ElementScanner14;
 import javax.swing.*;
 import java.awt.*;
 import java.util.Vector;
+import java.util.Calendar;
+import java.util.Date;
 
 public class GUI_Employee extends JFrame implements ActionListener {
     static JFrame f;
@@ -30,7 +32,7 @@ public class GUI_Employee extends JFrame implements ActionListener {
         //create a statement object
         Statement stmt = conn.createStatement();
         //create an SQL statement
-        String sqlStatement = "SELECT * FROM menu_key;";
+        String sqlStatement = "SELECT * FROM menu_key ORDER BY item asc;";
         //send statement to DBMS
         ResultSet result = stmt.executeQuery(sqlStatement);
         while (result.next()) {
@@ -38,7 +40,6 @@ public class GUI_Employee extends JFrame implements ActionListener {
           numList.add(Integer.parseInt(result.getString("item")));
           MenupriceList.add(Float.parseFloat(result.getString("price")));
         }
-        
       } catch (Exception e){
         JOptionPane.showMessageDialog(null,"Error accessing Database.");
       }
@@ -121,6 +122,16 @@ public class GUI_Employee extends JFrame implements ActionListener {
             sqlStatement = "UPDATE sales_list SET i_" + numToUpdate + " = " + itemQuan + ", total_sales = " + newPrice + " WHERE date = \'" + dateVar + "\';";
             //send statement to DBMS
             int res = stmt.executeUpdate(sqlStatement);
+          
+            //TODO 
+            if (res == 0){
+              Calendar c = Calendar.getInstance();
+              //c.setTime(Date(dateVar));
+              sqlStatement = "INSERT INTO sales_list VALUES(\'" + dateVar + "\', ;";
+              res = stmt.executeUpdate(sqlStatement);
+            }
+            
+            
             //System.out.print(res);
             //JOptionPane.showMessageDialog(null,"Added Order!");
           } catch (Exception y){
