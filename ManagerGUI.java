@@ -138,6 +138,8 @@ public class ManagerGUI extends JFrame implements ActionListener {
             Statement stmt = conn.createStatement();
             String sqlStatement = String.format("INSERT INTO menu_key VALUES (%d, \'%s\', \'%s\', %.2f) ON CONFLICT DO NOTHING;",item,name,desc,price);
             stmt.executeUpdate(sqlStatement);
+            sqlStatement = "ALTER TABLE sales_list ADD COLUMN i_" + item + " INT DEFAULT 0;";
+            stmt.executeUpdate(sqlStatement);
           } catch(Exception x){
             JOptionPane.showMessageDialog(null,"Error accessing Database." + x);
           }
