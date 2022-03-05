@@ -239,7 +239,6 @@ public class GUI_Employee extends JFrame implements ActionListener {
         JOptionPane.showMessageDialog(null,"Connection NOT Closed.");
       }
     }
-
     public void actionPerformed(ActionEvent e)
     {
         String s = e.getActionCommand();
