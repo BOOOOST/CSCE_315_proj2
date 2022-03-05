@@ -41,6 +41,7 @@ public class ReadFirstDayOrder{
 	  String date_ordered = "";
 	  String next;
 	  int count = 0;
+    int fill = 0;
 	  for(int i = 0; i < 6;i++){
 		    date_ordered = sc.next();
 	  }
@@ -79,9 +80,10 @@ public class ReadFirstDayOrder{
 				invoice_line = Integer.parseInt(split[0].substring(split[0].length()-2,split[0].length()-1));
 				description = split[1];
 			}
+      fill = Integer.parseInt(sc.next());
 			count++;
 			System.out.println(count+" " + Type + " , " + Name + " , " + SKU + " , " + quantity + " , " + sold_by + " , " + delivered_by + " , " + purchase_price_per + " , " + invoice_line + " , " + description);
-			String sqlStatement = "INSERT INTO inventory VALUES ( \'" + SKU + "\' , \'" + Type + "\' , \'" + Name + "\' , " + quantity + " , \'" + sold_by + "\' , \'" + delivered_by + "\' , " + purchase_price_per + " , " + invoice_line + " , \'" + date_ordered + "\' , \'" + description + "\') ON CONFLICT DO NOTHING;";
+			String sqlStatement = "INSERT INTO inventory VALUES ( \'" + SKU + "\' , \'" + Type + "\' , \'" + Name + "\' , " + quantity + " , \'" + sold_by + "\' , \'" + delivered_by + "\' , " + purchase_price_per + " , " + invoice_line + " , \'" + date_ordered + "\' , \'" + description + "\' , \'" + fill + "\') ON CONFLICT DO NOTHING;";
 			int result = stmt.executeUpdate(sqlStatement);
 			System.out.println(result);
 			
