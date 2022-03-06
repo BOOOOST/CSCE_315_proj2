@@ -2,6 +2,8 @@ import java.sql.*;
 import java.awt.*;
 import java.awt.BorderLayout;
 import java.awt.event.*;
+
+import javax.naming.ldap.BasicControl;
 import javax.swing.*;
 import javax.swing.plaf.basic.BasicTreeUI.TreeIncrementAction;
 
@@ -53,6 +55,7 @@ public class GUI_Trends extends JFrame implements ActionListener {
         JButton b = new JButton("Close");
         b.addActionListener(gui);
 
+        BorderLayout layout = new BorderLayout(20,15);
         JLabel init_date1 = new JLabel("Initial Date Set 1: ");
         JLabel final_date1 = new JLabel("Final Date Set 1: ");
         JTextField inDate1 = new JTextField("(mm/dd/yyyy)");
@@ -63,7 +66,61 @@ public class GUI_Trends extends JFrame implements ActionListener {
         JTextField finDate2 = new JTextField("(mm/dd/yyyy)");
 
         //Make button for ordering trends
-        JButton orderTrendButton = new JButton("Ordering Trends");
+        JButton orderTrendButton = new JButton("Order Trends (Use Both Date Sets)");
+        JButton orderPopButton = new JButton("Order Popularity (Use Date Set 1)");
+        //create popularity table of items when Ordering pop button is pressed
+        orderPopButton.addActionListener(new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                //get the starting and ending dates from the text fields for set 1
+                String start_date1 = inDate1.getText();
+                String end_date1 = finDate1.getText();
+                Vector<Integer> numItems = getNumItems(start_date1, end_date1);
+                //Create a table that displays the item number, % for set1, % for set2, %difference, column that displays Up/Down Trend
+                Vector<String> columnNames = new Vector<String>();
+                columnNames.add("Item");
+                columnNames.add("Number of Orders");
+                //Get the list of item names from menu
+                Vector<String> itemName = new Vector<String>();
+                try{
+                    Statement stmt = conn.createStatement();
+                    String sqlStatement = "SELECT * FROM menu_key ORDER BY item asc;";
+                    ResultSet result = stmt.executeQuery(sqlStatement);
+                    while(result.next()){
+                        itemName.add(result.getString("name"));
+                    }
+                }
+                catch (Exception y){
+                    JOptionPane.showMessageDialog(null,"Error accessing Database.");
+                }
+                Vector<Vector<String>> data = new Vector<Vector<String>>();
+                //loop through the lists and add the info to the 2d Vector
+                int x = 0;
+                while (x < numItems.size()){
+                    Vector<String> rowData = new Vector<String>();
+                    int index = getMaxInt(numItems);
+                    rowData.add(itemName.elementAt(index));
+                    rowData.add(String.valueOf(numItems.elementAt(index)));
+                    itemName.remove(itemName.elementAt(index));
+                    numItems.remove(numItems.elementAt(index));
+                    data.add(rowData);
+                }
+
+
+                ///create a table to add to the frame
+                JTable table = new JTable(data,columnNames);
+                JScrollPane scrollPane1 = new JScrollPane(table);
+                //Set it so the table will sort if you click on the column name (clicking on the trend and % diff should be good for the demo)
+                //table.setAutoCreateRowSorter(true);
+                table.setFillsViewportHeight(true);
+                //add table to frame, this should update the table everytime the button is pressed too
+                if (layout.getLayoutComponent(BorderLayout.CENTER) != null){
+                    f.remove(layout.getLayoutComponent(BorderLayout.CENTER));
+                }
+                f.add(scrollPane1,BorderLayout.CENTER);
+                f.pack();
+                f.setVisible(true);
+            }
+            });
         //create trend table when Ordering Trends button is pressed
         orderTrendButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
@@ -135,6 +192,9 @@ public class GUI_Trends extends JFrame implements ActionListener {
                 table.setAutoCreateRowSorter(true);
                 table.setFillsViewportHeight(true);
                 //add table to frame, this should update the table everytime the button is pressed too
+                if (layout.getLayoutComponent(BorderLayout.CENTER) != null){
+                    f.remove(layout.getLayoutComponent(BorderLayout.CENTER));
+                }
                 f.add(scrollPane,BorderLayout.CENTER);
                 f.pack();
                 f.setVisible(true);
@@ -142,13 +202,14 @@ public class GUI_Trends extends JFrame implements ActionListener {
             });
 
         //adding all of the components needed for the trends
-        f.setLayout(new BorderLayout(20,15));
+        f.setLayout(layout);
         f.add(b,BorderLayout.SOUTH);
         pan.add(orderTrendButton, BorderLayout.CENTER);
         pan.add(init_date1, BorderLayout.CENTER);
         pan.add(inDate1, BorderLayout.CENTER);
         pan.add(final_date1,BorderLayout.CENTER);
         pan.add(finDate1, BorderLayout.CENTER);
+        pan.add(orderPopButton, BorderLayout.CENTER);
         pan.add(init_date2, BorderLayout.CENTER);
         pan.add(inDate2, BorderLayout.CENTER);
         pan.add(final_date2,BorderLayout.CENTER);
@@ -158,6 +219,49 @@ public class GUI_Trends extends JFrame implements ActionListener {
         f.setSize(600,600);
         f.pack();
         f.setVisible(true);
+    }
+    //retursns the index of the max in the vector
+    static int getMaxInt(Vector<Integer> intList){
+        int max = intList.elementAt(0);
+        int index = 0;
+        for (int i = 0; i < intList.size(); i++){
+            if (intList.elementAt(i) > max){
+                max = intList.elementAt(i);
+                index = i;
+            }
+        }
+        return index;
+    }
+    //get the number of items for each menu item bewtween two dates
+    static Vector<Integer> getNumItems(String initDate, String endDate){
+        Vector<Integer> itemQuans = new Vector<Integer>();
+        try{
+            Statement stmt = conn.createStatement();
+            String sqlStatement = "SELECT * FROM sales_list WHERE date BETWEEN \'" + initDate + "\' AND \'" + endDate + "\' ORDER BY date asc;";
+            //System.out.println(sqlStatement);
+            ResultSet result = stmt.executeQuery(sqlStatement);
+            //Retrieving the ResultSetMetaData object
+            ResultSetMetaData rsmd = result.getMetaData();
+            //getting the column type
+            int column_count = rsmd.getColumnCount();
+            int quantityToAdd = 0;
+            int itemNum = 501;
+            int maxNum = 501 + column_count - 3;
+            //loop through the dates and get the total of each item to put in a list
+            for (int i = itemNum; i < maxNum; i++){
+                result = stmt.executeQuery(sqlStatement);
+                while(result.next()){
+                    quantityToAdd += Integer.parseInt(result.getString("i_" + i));
+                }
+                itemQuans.add(quantityToAdd);
+                quantityToAdd = 0;
+            }
+            return itemQuans;
+        }
+        catch (Exception y){
+            JOptionPane.showMessageDialog(null,"Error accessing Database. (GetItemQuantities)");
+        }
+        return itemQuans;
     }
     //get the total price of the items from the dates
     static Float getTotalPrices(String initDate, String endDate){
