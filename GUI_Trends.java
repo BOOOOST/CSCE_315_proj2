@@ -64,7 +64,7 @@ public class GUI_Trends extends JFrame implements ActionListener {
 
         //Make button for ordering trends
         JButton orderTrendButton = new JButton("Ordering Trends");
-        //create trend grpah when Ordering Trends button is pressed
+        //create trend table when Ordering Trends button is pressed
         orderTrendButton.addActionListener(new ActionListener(){
             public void actionPerformed(ActionEvent e){
                 //get the starting and ending dates from the text fields for set 1
@@ -111,6 +111,7 @@ public class GUI_Trends extends JFrame implements ActionListener {
                 //adding the info to a data 2d vector
                 float percentDiff = 0;
                 String trend;
+                //loop through the lists and add the info to the 2d Vector
                 for (int i = 0; i < set1.size(); i++){
                     Vector<String> rowData = new Vector<String>();
                     percentDiff = percent2.elementAt(i) - percent1.elementAt(i);
@@ -127,16 +128,20 @@ public class GUI_Trends extends JFrame implements ActionListener {
                     rowData.add(trend);
                     data.add(rowData);
                 }
+                ///create a table to add to the frame
                 JTable table = new JTable(data,columnNames);
                 JScrollPane scrollPane = new JScrollPane(table);
+                //Set it so the table will sort if you click on the column name (clicking on the trend and % diff should be good for the demo)
+                table.setAutoCreateRowSorter(true);
                 table.setFillsViewportHeight(true);
+                //add table to frame, this should update the table everytime the button is pressed too
                 f.add(scrollPane,BorderLayout.CENTER);
                 f.pack();
                 f.setVisible(true);
             }
             });
 
-        
+        //adding all of the components needed for the trends
         f.setLayout(new BorderLayout(20,15));
         f.add(b,BorderLayout.SOUTH);
         pan.add(orderTrendButton, BorderLayout.CENTER);
@@ -159,15 +164,12 @@ public class GUI_Trends extends JFrame implements ActionListener {
         float totPrice = 0;
         try{
             Statement stmt = conn.createStatement();
-            //make sql select statement for rows inbetween the two dates
-            //SELECT * FROM sales_list WHERE date BETWEEN '02/18/2022' AND '02/20/2022' ORDER BY date asc;
             String sqlStatement = "SELECT * FROM sales_list WHERE date BETWEEN \'" + initDate + "\' AND \'" + endDate + "\' ORDER BY date asc;";
-            //System.out.println(sqlStatement);
             ResultSet result = stmt.executeQuery(sqlStatement);
+            //Just get the prices inbetween the two dates and add them up
             while(result.next()){
                 totPrice += Float.parseFloat(result.getString("total_sales"));
             }
-            
             return totPrice;
         }
         catch (Exception y){
@@ -177,7 +179,9 @@ public class GUI_Trends extends JFrame implements ActionListener {
     }
     //returns a list of the item quantity totals multiplied with their menu prices within a set of dates
     static Vector<Float> getItemQuantities(String initDate, String endDate){
+        //list of the number of orders each menu item has
         Vector<Integer> itemQuans = new Vector<Integer>();
+        //returning ans vector
         Vector<Float> ans = new Vector<Float>();
         try{
             Statement stmt = conn.createStatement();
@@ -202,12 +206,14 @@ public class GUI_Trends extends JFrame implements ActionListener {
                 itemQuans.add(quantityToAdd);
                 quantityToAdd = 0;
             }
+            //Get menu prices to multiply with itemQuans list to get ans vecotr
             sqlStatement = "SELECT * FROM menu_key ORDER BY item asc;";
             Vector<Float> menuPrices = new Vector<Float>();
             result = stmt.executeQuery(sqlStatement);
             while(result.next()){
                 menuPrices.add(Float.parseFloat(result.getString("price")));
             }
+            //multiply the total number of orders each item menu has with its corresponding menu price to get the total revenue for that menu item
             ans = new Vector<Float>();
             for (int i = 0; i < menuPrices.size(); i++){
                 ans.add(menuPrices.elementAt(i) * itemQuans.elementAt(i));
