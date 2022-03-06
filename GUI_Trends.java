@@ -166,30 +166,37 @@ public class GUI_Trends extends JFrame implements ActionListener {
                 }
                 Vector<Vector<String>> data = new Vector<Vector<String>>();
                 //adding the info to a data 2d vector
-                float percentDiff = 0;
                 String trend;
+                Vector<Float> percentDiff = new Vector<Float>();
+                for (int i = 0; i < percent1.size(); i++){
+                    percentDiff.add(percent2.elementAt(i) - percent1.elementAt(i));
+                }
                 //loop through the lists and add the info to the 2d Vector
-                for (int i = 0; i < set1.size(); i++){
+                while (0 < percentDiff.size()){
                     Vector<String> rowData = new Vector<String>();
-                    percentDiff = percent2.elementAt(i) - percent1.elementAt(i);
-                    if (percentDiff <= 0){
+                    int index = getMaxFloat(percentDiff);
+                    if (percentDiff.elementAt(index) <= 0){
                         trend = "Down";
                     }
                     else{
                         trend = "Up";
                     }
-                    rowData.add(itemName.elementAt(i));
-                    rowData.add(String.valueOf(percent1.elementAt(i)));
-                    rowData.add(String.valueOf(percent2.elementAt(i)));
-                    rowData.add(String.valueOf(percentDiff));
+                    rowData.add(itemName.elementAt(index));
+                    rowData.add(String.valueOf(percent1.elementAt(index)));
+                    rowData.add(String.valueOf(percent2.elementAt(index)));
+                    rowData.add(String.valueOf(percentDiff.elementAt(index)));
                     rowData.add(trend);
                     data.add(rowData);
+                    itemName.remove(itemName.elementAt(index));
+                    percent1.remove(percent1.elementAt(index));
+                    percent2.remove(percent2.elementAt(index));
+                    percentDiff.remove(percentDiff.elementAt(index));
                 }
                 ///create a table to add to the frame
                 JTable table = new JTable(data,columnNames);
                 JScrollPane scrollPane = new JScrollPane(table);
                 //Set it so the table will sort if you click on the column name (clicking on the trend and % diff should be good for the demo)
-                table.setAutoCreateRowSorter(true);
+                //table.setAutoCreateRowSorter(true);
                 table.setFillsViewportHeight(true);
                 //add table to frame, this should update the table everytime the button is pressed too
                 if (layout.getLayoutComponent(BorderLayout.CENTER) != null){
@@ -223,6 +230,18 @@ public class GUI_Trends extends JFrame implements ActionListener {
     //retursns the index of the max in the vector
     static int getMaxInt(Vector<Integer> intList){
         int max = intList.elementAt(0);
+        int index = 0;
+        for (int i = 0; i < intList.size(); i++){
+            if (intList.elementAt(i) > max){
+                max = intList.elementAt(i);
+                index = i;
+            }
+        }
+        return index;
+    }
+    //retursns the index of the max in the vector
+    static int getMaxFloat(Vector<Float> intList){
+        float max = intList.elementAt(0);
         int index = 0;
         for (int i = 0; i < intList.size(); i++){
             if (intList.elementAt(i) > max){
