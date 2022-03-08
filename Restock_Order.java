@@ -35,7 +35,7 @@ public class Restock_Order extends JFrame implements ActionListener {
 
         // initialize and set layout of the main panel
         pan = new JPanel();
-        pan.setLayout(new GridLayout(0, 3));
+        pan.setLayout(new GridLayout(0, 4));
 
         // initialize the close button and add give it an action listener
         JButton b = new JButton("Close");
@@ -62,6 +62,11 @@ public class Restock_Order extends JFrame implements ActionListener {
                 cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                 pan.add(cell);
 
+                String s = r.getString("sold_by");
+                cell = new JLabel(s);
+                cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                pan.add(cell);
+
                 cell = new JLabel(String.valueOf(r.getInt("fill")));
                 cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                 pan.add(cell);
@@ -80,7 +85,7 @@ public class Restock_Order extends JFrame implements ActionListener {
         itemB.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 pan = new JPanel();
-                pan.setLayout(new GridLayout(0, 3));
+                pan.setLayout(new GridLayout(0, 4));
                 String quant = editIn.getText();
                 String sel = (String) itemSell.getSelectedItem();
                 try {
@@ -110,6 +115,12 @@ public class Restock_Order extends JFrame implements ActionListener {
                         cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                         pan.add(cell);
 
+                        String s = newR.getString("sold_by");
+                        cell = new JLabel(s);
+                        // itemNames.add(i);
+                        cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                        pan.add(cell);
+
                         cell = new JLabel(String.valueOf(newR.getInt("fill")));
                         cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                         pan.add(cell);
@@ -135,13 +146,13 @@ public class Restock_Order extends JFrame implements ActionListener {
         // and restock report
         JTextField editInB = new JTextField();
         JPanel editPanB = new JPanel();
-        editPanB.setLayout(new GridLayout(1, 3));
+        editPanB.setLayout(new GridLayout(1, 4));
         JComboBox fillLevel = new JComboBox(itemNames);
         JButton itemC = new JButton("Edit Fill Level");
         itemC.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 pan = new JPanel();
-                pan.setLayout(new GridLayout(0, 3));
+                pan.setLayout(new GridLayout(0, 4));
                 String fill = editInB.getText();
                 String selected = (String) fillLevel.getSelectedItem();
                 try {
@@ -167,9 +178,16 @@ public class Restock_Order extends JFrame implements ActionListener {
                         cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                         pan.add(cell);
 
+                        String s = newR.getString("sold_by");
+                        cell = new JLabel(s);
+                        // itemNames.add(i);
+                        cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                        pan.add(cell);
+
                         cell = new JLabel(String.valueOf(newR.getInt("fill")));
                         cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                         pan.add(cell);
+
                     }
                     bigFrame.add(pan, BorderLayout.CENTER);
                     bigFrame.pack();
@@ -188,7 +206,7 @@ public class Restock_Order extends JFrame implements ActionListener {
 
         JTextField ItemName = new JTextField();
         JPanel addPanel = new JPanel();
-        addPanel.setLayout(new GridLayout(1, 3));
+        addPanel.setLayout(new GridLayout(1, 4));
         JTextField ItemQuantity = new JTextField();
         JTextField ItemSKU = new JTextField();
         JTextField ItemType = new JTextField();
@@ -235,12 +253,12 @@ public class Restock_Order extends JFrame implements ActionListener {
         // level
         restockPanel = new JPanel();
 
-        restockPanel.setLayout(new GridLayout(0, 3));
+        restockPanel.setLayout(new GridLayout(0, 4));
         JButton gen = new JButton("Generate Restock Report");
         gen.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 restockPanel = new JPanel();
-                restockPanel.setLayout(new GridLayout(0, 3));
+                restockPanel.setLayout(new GridLayout(0, 4));
                 try {
                     Statement stm = conn.createStatement();
                     String sqlStatement = "SELECT * FROM inventory WHERE fill > quantity ORDER BY name asc;";
@@ -260,6 +278,12 @@ public class Restock_Order extends JFrame implements ActionListener {
                         cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                         restockPanel.add(cell);
 
+                        String s = theResult.getString("sold_by");
+                        cell = new JLabel(s);
+                        // tempNames.add(i);
+                        cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+                        restockPanel.add(cell);
+
                         cell = new JLabel(String.valueOf(theResult.getInt("fill")));
                         cell.setBorder(BorderFactory.createLineBorder(Color.BLACK));
                         restockPanel.add(cell);
@@ -274,14 +298,18 @@ public class Restock_Order extends JFrame implements ActionListener {
                         bigFrame.pack();
                         bigFrame.setVisible(true);
                     }
+                    String theUpdate = "UPDATE inventory SET quantity = fill WHERE fill > quantity;"; // updates the
+                                                                                                      // quantity to
+                                                                                                      // fill level
+                    stm.executeQuery(theUpdate);
                     // JOptionPane.showMessageDialog(null, "Reload to show changes.");
                 } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(null, "Error accessing database.");
+                    // JOptionPane.showMessageDialog(null, "Error accessing database.");
                 }
             }
         });
         // adding all buttons and panels to the frame happens down here
-        totalPan.setLayout(new GridLayout(2, 3));
+        totalPan.setLayout(new GridLayout(2, 4));
         totalPan.add(addPanel);
         totalPan.add(editPan);
         totalPan.add(editPanB);
