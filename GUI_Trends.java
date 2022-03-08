@@ -127,6 +127,7 @@ public class GUI_Trends extends JFrame implements ActionListener {
                 float friesUsed = (float)0.0167*totalFries; itemUsages.add(friesUsed);
                 float oilUsed = (float)0.01557*(totalFries + totalTenders); itemUsages.add(oilUsed);
                 float garlicUsed = (float)0.00125*totalTenders; itemUsages.add(garlicUsed);
+                float impChicken = (float)0.09375*numItems.elementAt(19); itemUsages.add(impChicken);
                 float lgKetContainerUsed = (float).1*numDays; itemUsages.add(lgKetContainerUsed);
                 float ketPacketsUsed = (float)0.25*numDays; itemUsages.add(ketPacketsUsed);
                 float liquidMargUsed = (float)0.005*totalBread; itemUsages.add(liquidMargUsed);
@@ -185,7 +186,7 @@ public class GUI_Trends extends JFrame implements ActionListener {
                 if(which == invPopButton){
                     //loop through the lists and add the info to the 2d Vector
                     int x = 0;
-                    while (x < invItemNames.size()){
+                    while (x < itemUsages.size()){
                         Vector<String> rowData = new Vector<String>();
                         int index = getMaxFloat(itemUsages);
                         rowData.add(invItemNames.elementAt(index));
