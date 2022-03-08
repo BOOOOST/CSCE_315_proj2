@@ -115,6 +115,12 @@ public class GUI_Inventory extends JFrame implements ActionListener {
         JTextField ItemType = new JTextField();
         JTextField ItemSold_by = new JTextField();
         JTextField ItemDesc = new JTextField();
+        ItemName.setText("Name"); 
+        ItemQuantity.setText("Quantity");
+        ItemSKU.setText("SKU"); 
+        ItemType.setText("Type");
+        ItemSold_by.setText("Sold_by"); 
+        ItemDesc.setText("Desc");
         JButton AddButton = new JButton("Add an Item");
         AddButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
@@ -126,7 +132,7 @@ public class GUI_Inventory extends JFrame implements ActionListener {
                 String Desc = ItemDesc.getText();
                 try {
                     Statement st = conn.createStatement();
-                    String sqlSt = "INSERT INTO inventory VALUES ('" + SKU + "', '" + Name + "', '" + Type + "', "+ quant + ", '"+ Sold_by + "', '"+ Desc + "');";
+                    String sqlSt = "INSERT INTO inventory VALUES ('" + SKU + "', '" + Type + "', '" + Name + "', "+ quant + ", '"+ Sold_by + "', 'case', 50, 9, '2022-02-22', '"+ Desc + "', 10);";
                     System.err.println(sqlSt);
                     st.executeUpdate(sqlSt);
 
