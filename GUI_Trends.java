@@ -4,7 +4,9 @@ import java.awt.BorderLayout;
 import java.awt.event.*;
 
 import javax.naming.ldap.BasicControl;
+import javax.naming.spi.DirStateFactory.Result;
 import javax.swing.*;
+import javax.swing.border.Border;
 import javax.swing.plaf.basic.BasicTreeUI.TreeIncrementAction;
 
 import java.util.*;
@@ -64,6 +66,161 @@ public class GUI_Trends extends JFrame implements ActionListener {
         JLabel final_date2 = new JLabel("Final Date Set 2: ");
         JTextField inDate2 = new JTextField("(mm/dd/yyyy)");
         JTextField finDate2 = new JTextField("(mm/dd/yyyy)");
+
+        //Make buttons for inventory usage/popularity
+        JButton invUsageButton = new JButton("Inventory Usage (Use Date Set 1)");
+        JButton invPopButton = new JButton("Inventory Popularity (Use Date Set 1)");
+
+        //create inventory usage table when invUsageButton or invPopButton are pressed
+        ActionListener invButton = new ActionListener(){
+            public void actionPerformed(ActionEvent e){
+                //gets date window from date set 1 and gets the number of each menu item ordered within the date window
+                String start = inDate1.getText();
+                String end = finDate1.getText();
+                Vector<Integer> numItems = getNumItems(start, end);
+                //Create a table that displays the inventory item name, and the quantity of that item that has been used
+                Vector<String> colNames = new Vector<String>();
+                colNames.add("Inventory Item");
+                colNames.add("Qantity Used");
+                //get every inventory item name
+                Vector<String> invItemNames = new Vector<String>();
+                int numDays = 0;
+                try{
+                    //get all food inventory item names
+                    Statement stmt = conn.createStatement();
+                    String sqlStatement = "SELECT * FROM inventory WHERE type = \'Food\' ORDER BY name asc;";
+                    ResultSet res = stmt.executeQuery(sqlStatement);
+                    while(res.next()){
+                        invItemNames.add(res.getString("name"));
+                    }
+                    //get all non food inventory item names
+                    sqlStatement = "SELECT * FROM inventory WHERE NOT type = \'Food\' ORDER BY name asc;";
+                    res = stmt.executeQuery(sqlStatement);
+                    while(res.next()){
+                        invItemNames.add(res.getString("name"));
+                    }
+                    //get number of days long of the window
+                    sqlStatement = "SELECT * FROM sales_list WHERE date BETWEEN \'" + start + "\' AND \'" + end + "\' ORDER BY date asc;";
+                    res = stmt.executeQuery(sqlStatement);
+                    while(res.next()){
+                        numDays = res.getRow();
+                    }
+                    //System.out.println(numDays);
+                } catch (Exception x){
+                    JOptionPane.showMessageDialog(null,"Error accessing Database." + x);
+                }
+                // Calculate all amounts of inventory items used based on how many of each food item was ordered
+                int totalTenders = 5*numItems.elementAt(0) + 4*numItems.elementAt(1) + 3*numItems.elementAt(2) + 2*numItems.elementAt(3)
+                + 20*numItems.elementAt(5) + 3*(numItems.elementAt(6) + numItems.elementAt(7) + numItems.elementAt(8) + numItems.elementAt(9))
+                + numItems.elementAt(13) + 5*numItems.elementAt(19);
+                int totalFries = numItems.elementAt(0) + numItems.elementAt(1) + numItems.elementAt(2) + numItems.elementAt(3)
+                + 4*numItems.elementAt(5) + numItems.elementAt(6) + numItems.elementAt(8) + numItems.elementAt(10) + numItems.elementAt(16) + numItems.elementAt(19);
+                int totalBread = numItems.elementAt(0) + numItems.elementAt(1) + numItems.elementAt(2) + numItems.elementAt(3) + 4*numItems.elementAt(5)
+                + 3*(numItems.elementAt(6) + numItems.elementAt(8) + numItems.elementAt(10)) + 2*(numItems.elementAt(7) + numItems.elementAt(9) + numItems.elementAt(11))
+                + numItems.elementAt(14) + numItems.elementAt(19);
+                //food item usage
+                Vector<Float> itemUsages = new Vector<Float>();
+                float baconUsed = (float)0.01 * (numItems.elementAt(6) + numItems.elementAt(7)); itemUsages.add(baconUsed);
+                float pepperUsed = (float)0.000625*totalTenders; itemUsages.add(pepperUsed);
+                float chickenUsed = (float)0.09375*totalTenders; itemUsages.add(chickenUsed);
+                float flourUsed = (float)0.0025*totalTenders; itemUsages.add(flourUsed);
+                float friesUsed = (float)0.0167*totalFries; itemUsages.add(friesUsed);
+                float oilUsed = (float)0.01557*(totalFries + totalTenders); itemUsages.add(oilUsed);
+                float garlicUsed = (float)0.00125*totalTenders; itemUsages.add(garlicUsed);
+                float impChicken = (float)0.09375*numItems.elementAt(19); itemUsages.add(impChicken);
+                float lgKetContainerUsed = (float).1*numDays; itemUsages.add(lgKetContainerUsed);
+                float ketPacketsUsed = (float)0.25*numDays; itemUsages.add(ketPacketsUsed);
+                float liquidMargUsed = (float)0.005*totalBread; itemUsages.add(liquidMargUsed);
+                float mayoUsed = (float).0025*numItems.elementAt(4); itemUsages.add(mayoUsed);
+                float potSaladUsed = (float)0.06875*(numItems.elementAt(0) + numItems.elementAt(1) + numItems.elementAt(2) + numItems.elementAt(3) + numItems.elementAt(6)
+                + numItems.elementAt(8) + numItems.elementAt(10) + numItems.elementAt(15) + + numItems.elementAt(19)); itemUsages.add(potSaladUsed);
+                float ranchUsed = (float).0025*numItems.elementAt(4); itemUsages.add(ranchUsed);
+                float saltUsed = numDays; itemUsages.add(saltUsed);
+                float cheeseUsed = (float)0.0021*(numItems.elementAt(6) + numItems.elementAt(7) + numItems.elementAt(10) + numItems.elementAt(11)); itemUsages.add(cheeseUsed);
+                float teaSugarUsed = (float)0.021*numItems.elementAt(4); itemUsages.add(teaSugarUsed);
+                float teaBagsUsed = (float)0.0417*numItems.elementAt(4); itemUsages.add(teaBagsUsed);
+                float breadUsed = totalBread/170; itemUsages.add(breadUsed);
+                float worceSauceUsed = (float).0025*numItems.elementAt(4); itemUsages.add(worceSauceUsed);
+                //non food item usage
+                float tenOzCup = (float)0.1*numDays; itemUsages.add(tenOzCup);
+                float sixteenOzCup = (float)(numItems.elementAt(17) + numItems.elementAt(0) + numItems.elementAt(1) + numItems.elementAt(2) + numItems.elementAt(3)
+                + numItems.elementAt(6) + numItems.elementAt(8) + numItems.elementAt(10) + numItems.elementAt(19))/1000;  itemUsages.add(sixteenOzCup);
+                float twoOzCup = (float)(numItems.elementAt(12) + numItems.elementAt(0) + numItems.elementAt(1) + numItems.elementAt(2) + numItems.elementAt(3)
+                + numItems.elementAt(6) + numItems.elementAt(8) + numItems.elementAt(10) + numItems.elementAt(19) + 8*numItems.elementAt(5))/2500; itemUsages.add(twoOzCup);
+                float twoOzLid = (float)twoOzCup; itemUsages.add(twoOzLid);
+                float fiveOzCup = (float)(numItems.elementAt(15) + numItems.elementAt(0) + numItems.elementAt(1) + numItems.elementAt(2) + numItems.elementAt(3)
+                + numItems.elementAt(6) + numItems.elementAt(8) + numItems.elementAt(10) + numItems.elementAt(19))/2500; itemUsages.add(fiveOzCup);
+                float fiveOzLid = fiveOzCup; itemUsages.add(fiveOzLid);
+                float basketLiners = (float)(numItems.elementAt(0) + numItems.elementAt(1) + numItems.elementAt(2) + numItems.elementAt(3)
+                + numItems.elementAt(6) + numItems.elementAt(8) + numItems.elementAt(10) + numItems.elementAt(19))/6000; itemUsages.add(basketLiners);
+                float berryLemonade = (float)0.0417*(numItems.elementAt(18))/4; itemUsages.add(berryLemonade);
+                float creamSoda = berryLemonade; itemUsages.add(creamSoda);
+                float orangeNCream = berryLemonade; itemUsages.add(orangeNCream);
+                float rootBeer = berryLemonade; itemUsages.add(rootBeer);
+                float cutlery = (float)0.01*numDays; itemUsages.add(cutlery);
+                float dishSoap = (float)numDays/24; itemUsages.add(dishSoap);
+                float drinkLids = sixteenOzCup; itemUsages.add(drinkLids);
+                float floorCleaner = (float)numDays/90; itemUsages.add(floorCleaner);
+                float gloves = (float)0.1*numDays; itemUsages.add(gloves);
+                float handSanitizer = (float)numDays/8; itemUsages.add(handSanitizer);
+                float handSoap = (float)numDays/8; itemUsages.add(handSoap);
+                float hingedLidBoxLg = (float)0.005*(basketLiners/3); itemUsages.add(hingedLidBoxLg);
+                float hingedLidBoxSm = (float)0.0022*(basketLiners/3); itemUsages.add(hingedLidBoxSm);
+                float cola = sixteenOzCup/6; itemUsages.add(cola);
+                float drJones = sixteenOzCup/6; itemUsages.add(drJones);
+                float lemonLime = sixteenOzCup/6; itemUsages.add(lemonLime);
+                float orangeNCreamBIB = sixteenOzCup/6; itemUsages.add(orangeNCreamBIB);
+                float rootBeerBIB = sixteenOzCup/6; itemUsages.add(rootBeerBIB);
+                float sugarFreeCola = sixteenOzCup/6; itemUsages.add(sugarFreeCola);
+                float napkin = (float)numDays/30; itemUsages.add(napkin);
+                float paperTowels = (float)numDays/60; itemUsages.add(paperTowels);
+                float straws = sixteenOzCup; itemUsages.add(straws);
+                float surfaceCleaner = (float)numDays/24; itemUsages.add(surfaceCleaner);
+                float toiletPaper = (float)numDays*2; itemUsages.add(toiletPaper);
+                float trashCanLinerLg = (float)numDays/2; itemUsages.add(trashCanLinerLg);
+                float trashCanLinerSm = (float)numDays*3; itemUsages.add(trashCanLinerSm);
+                //System.out.println(invItemNames.size() + "item names and " + itemUsages.size() + " items");
+
+                Object which = e.getSource();
+                Vector<Vector<String>> data = new Vector<Vector<String>>();
+                if(which == invPopButton){
+                    //loop through the lists and add the info to the 2d Vector
+                    int x = 0;
+                    while (x < itemUsages.size()){
+                        Vector<String> rowData = new Vector<String>();
+                        int index = getMaxFloat(itemUsages);
+                        rowData.add(invItemNames.elementAt(index));
+                        rowData.add(String.valueOf(itemUsages.elementAt(index)));
+                        invItemNames.remove(invItemNames.elementAt(index));
+                        itemUsages.remove(itemUsages.elementAt(index));
+                        data.add(rowData);
+                    }
+                } else {
+                    for(int i = 0; i < itemUsages.size();i++){
+                        Vector<String> rowData = new Vector<String>();
+                        rowData.add(invItemNames.elementAt(i));
+                        rowData.add(String.valueOf(itemUsages.elementAt(i)));
+                        data.add(rowData);
+                    }
+                }
+                //create a table to add to the frame
+                JTable table = new JTable(data,colNames);
+                JScrollPane scrollPane1 = new JScrollPane(table);
+                //Set it so the table will sort if you click on the column name (clicking on the trend and % diff should be good for the demo)
+                //table.setAutoCreateRowSorter(true);
+                table.setFillsViewportHeight(true);
+                //add table to frame, this should update the table everytime the button is pressed too
+                if (layout.getLayoutComponent(BorderLayout.CENTER) != null){
+                    f.remove(layout.getLayoutComponent(BorderLayout.CENTER));
+                }
+                f.add(scrollPane1,BorderLayout.CENTER);
+                f.pack();
+                f.setVisible(true);
+            }
+        };
+        //give both inventory buttons this function when pressed
+        invPopButton.addActionListener(invButton);
+        invUsageButton.addActionListener(invButton);
 
         //Make button for ordering trends
         JButton orderTrendButton = new JButton("Order Trends (Use Both Date Sets)");
@@ -221,6 +378,8 @@ public class GUI_Trends extends JFrame implements ActionListener {
         pan.add(inDate2, BorderLayout.CENTER);
         pan.add(final_date2,BorderLayout.CENTER);
         pan.add(finDate2, BorderLayout.CENTER);
+        pan.add(invPopButton, BorderLayout.CENTER);
+        pan.add(invUsageButton, BorderLayout.CENTER);
         f.add(pan,BorderLayout.NORTH);
         f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         f.setSize(600,600);
